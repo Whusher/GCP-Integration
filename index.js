@@ -1,3 +1,4 @@
+require('dotenv');
 const express = require('express');
 const axios = require('axios');
 const cors = require("cors");
@@ -8,6 +9,27 @@ const PORT = process.env.PORT || 3000;
 app.use(cors('*'));
 
 
+// Code super secure for production
+const SUPER_TOKEN = process.env.SUPER_TOKEN_ACCESS_USER ?? '010101Aa';
+
+const middleware = (req, res, next) => {
+    if(req.headers['token'] != null){
+        const token = req.headers['token'];
+        if(token == SUPER_TOKEN){
+            next();
+        }else{
+            return res.status(401).json({
+                message: "NOT TOKEN PROVIDED",
+                alert: "User-Tracked"
+            })    
+        }
+    }else{
+        return res.status(401).json({
+            message: "NOT TOKEN PROVIDED",
+            alert: "User-Tracked"
+        })
+    }
+}
 
 // Middleware para obtener la IP real del cliente
 const getRealIP = (req) => {
@@ -123,7 +145,7 @@ app.get('/', async (req, res) => {
 });
 
 // Ruta para consultar IP específica
-app.get('/ip/:ip', async (req, res) => {
+app.get('/ip/:ip', middleware, async (req, res) => {
     try {
         const { ip } = req.params;
         const format = req.query.format || 'json';
@@ -162,7 +184,7 @@ app.get('/ip/:ip', async (req, res) => {
 });
 
 // Ruta para consulta masiva de IPs
-app.get('/bulk/:ips', async (req, res) => {
+app.get('/bulk/:ips', middleware, async (req, res) => {
     try {
         const { ips } = req.params;
         const format = req.query.format || 'json';
@@ -213,7 +235,7 @@ app.get('/bulk/:ips', async (req, res) => {
 });
 
 // Ruta de información de la API
-app.get('/info', (req, res) => {
+app.get('/info', middleware, (req, res) => {
     res.json({
         name: 'IP Query Node.js API',
         version: '1.0.0',
