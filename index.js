@@ -4,7 +4,7 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Public use
+// Public use ONLY
 app.use(cors('*'));
 
 
